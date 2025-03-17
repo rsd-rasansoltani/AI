@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rasan-AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 10px;
+            background-color: #f4f4f9;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #chat-box {
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #fafafa;
+        }
+        input[type="text"] {
+            width: calc(100% - 120px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <h2>chat with Rasan-AI</h2>
+    <div id="chat-box"></div>
+    <input type="text" id="user-input" placeholder="پیام خود را وارد کنید...">
+    <button onclick="sendMessage()">ارسال</button>
+</div>
+
+<script>
+    const chatBox = document.getElementById('chat-box');
+    const userInput = document.getElementById('user-input');
+
+    const apiKey = "aa-FNKfNJiWXtdWQU0EEusl7JSXc2xYD7heA4bcRQnZVSSsNvzz";  // API Key خود را وارد کنید
+    const baseUrl = "https://api.avalai.ir/v1";  // آدرس API آوالای
+    const modelName = "gpt-4o-mini";  // مدل مورد نظر
+
+    function displayMessage(message, sender) {
+        const messageElement = document.createElement('div');
+        messageElement.innerHTML = `<b>${sender}:</b> ${message}`;
+        chatBox.appendChild(messageElement);
+        chatBox.scrollTop = chatBox.scrollHeight; // اسکرول به پایین
+    }
+
+    async function sendMessage() {
+        const userText = userInput.value.trim();
+        if (!userText) return;
+
+        displayMessage(userText, "you");
+        userInput.value = '';  // پاک کردن فیلد ورودی
+
+        const messages = [
+            { role: "system", content: "You are a helpful assistant." },
+            { role: "user", content: userText }
+        ];
+
+        try {
+            const response = await fetch(`${baseUrl}/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: modelName,
+                    messages: messages
+                })
+            });
+
+            const data = await response.json();
+            const botReply = data.choices[0].message.content;
+            displayMessage(botReply, "RasanAI");
+        } catch (error) {
+            displayMessage("خطا در برقراری ارتباط با سرور. لطفا دوباره تلاش کنید.", "سیستم");
+        }
+    }
+</script>
+
+</body>
+</html>
