@@ -1,110 +1,315 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rasan-AI</title>
+    <title>سلطانی زنگی AI - هوش مصنوعی متنی</title>
+    <!-- Tailwind CSS CDN برای طراحی زیبا و واکنش‌گرا -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
+        /* تنظیمات اصلی برای فونت و بدنه */
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 10px;
-            background-color: #f4f4f9;
-        }
-        .chat-container {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #fff;
+            font-family: "Inter", Tahoma, Arial, sans-serif;
+            background-color: #0d1117; /* پس‌زمینه تیره و جذاب */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            
+            /* برای افکت پس زمینه */
+            position: relative;
+            overflow-x: hidden;
         }
-        #chat-box {
-            height: 300px;
-            overflow-y: auto;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            padding: 10px;
-            background-color: #fafafa;
+        /* افکت شبکه دیجیتال برای پس زمینه */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* الگوی شبکه نقطه ای بسیار ظریف */
+            background: 
+                repeating-linear-gradient(0deg, #10151f, #10151f 1px, transparent 1px, transparent 15px),
+                repeating-linear-gradient(90deg, #10151f, #10151f 1px, transparent 1px, transparent 15px);
+            background-size: 15px 15px;
+            opacity: 0.15;
+            pointer-events: none; 
+            z-index: -1;
         }
-        input[type="text"] {
-            width: calc(100% - 120px);
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+
+        /* استایل اختصاصی برای کانتینر اصلی چت برای افکت درخشش (Glow) */
+        .main-chat-container {
+            /* درخشش سیان/آبی */
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.15), 0 0 10px rgba(0, 255, 255, 0.05);
+            transition: all 0.5s ease-in-out;
         }
-        button {
-            width: 100px;
-            padding: 10px;
-            background-color: #4CAF50;
+        .main-chat-container:hover {
+            /* درخشش قوی‌تر در حالت هاور */
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.25), 0 0 20px rgba(0, 255, 255, 0.1);
+        }
+
+        /* استایل اختصاصی برای پیام‌های هوش مصنوعی (رنگ‌های سرد) */
+        .ai-message {
+            background-color: #121a22; /* رنگ تیره برای باکس پیام هوش مصنوعی */
+            border-bottom-left-radius: 4px;
+        }
+        
+        /* استایل برای پیام لودینگ (فکر کردن) */
+        .thinking-message {
+            background-color: #1c2633;
+            color: #8fa8bd;
+            font-style: italic;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        /* استایل اختصاصی برای پیام‌های کاربر */
+        .user-message {
+            background-color: #3f454f; /* رنگ ذغالی/سنگی تیره و محکم */
             color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            border-bottom-right-radius: 4px;
+            text-align: right;
         }
-        button:hover {
-            background-color: #45a049;
+
+        /* برای مدیریت اسکرول پیام‌ها */
+        #chat-window {
+            height: 70vh;
+            max-height: 500px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        /* استایل برای مخفی کردن نوار اسکرول در کروم و سافاری */
+        #chat-window::-webkit-scrollbar {
+            width: 0;
+            height: 0;
         }
     </style>
 </head>
 <body>
 
-<div class="chat-container">
-    <h2>chat with Rasan-AI</h2>
-    <div id="chat-box"></div>
-    <input type="text" id="user-input" placeholder="پیام خود را وارد کنید...">
-    <button onclick="sendMessage()">ارسال</button>
-</div>
+    <!-- کانتینر اصلی اپلیکیشن چت - اضافه شدن کلاس main-chat-container -->
+    <!-- رنگ پس زمینه مشکی عمیق‌تر -->
+    <div class="w-full max-w-2xl bg-[#0a0b12] shadow-2xl rounded-xl p-6 flex flex-col space-y-4 border border-gray-700 main-chat-container">
+        
+        <!-- عنوان و هدینگ -->
+        <header class="text-center pb-4 border-b border-gray-700">
+            <!-- گرادیان مدرن: سیان به آبی -->
+            <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+                Soltani AI 
+                <br>
+                (4ba.IR || {Rasan})
+            </h1>
+            <p class="text-sm text-gray-400 mt-1">هوش مصنوعی سلطانی؛ فرمانده دنیای داده‌ها</p>
+        </header>
 
-<script>
-    const chatBox = document.getElementById('chat-box');
-    const userInput = document.getElementById('user-input');
+        <!-- پنجره نمایش پیام‌ها -->
+        <div id="chat-window" class="flex flex-col space-y-4 p-3 rounded-lg bg-[#0d1117]">
+            <!-- پیام خوش‌آمدگویی اولیه از هوش مصنوعی -->
+            <div class="ai-message p-3 rounded-xl max-w-[85%] self-start text-gray-200 shadow-lg">
+<p>سلام، من سلطانی  AI هستم — هوش مصنوعی متنی شما. آماده‌ام تا به هر پرسش یا ایده‌ای که دارید پاسخ دهم. امروز در چه زمینه‌ای می‌توانم همراهتان باشم؟ </p>
 
-    const apiKey = "aa-Br39UzlLkk5xezsRRCvkchysj3Ye5neeUmOfcEzZ5lVMXBSi";  // API Key خود را وارد کنید
-    const baseUrl = "https://api.avalai.ir/v1";  // آدرس API آوالای
-    const modelName = "gpt-4o-mini";  // مدل مورد نظر
+            </div>
+        </div>
 
-    function displayMessage(message, sender) {
-        const messageElement = document.createElement('div');
-        messageElement.innerHTML = `<b>${sender}:</b> ${message}`;
-        chatBox.appendChild(messageElement);
-        chatBox.scrollTop = chatBox.scrollHeight; // اسکرول به پایین
-    }
+        <!-- بخش ورودی کاربر -->
+        <div class="flex space-x-2 rtl:space-x-reverse pt-4 border-t border-gray-700">
+            <!-- فوکوس رینگ ورودی هماهنگ با تم جدید -->
+            <input type="text" id="user-input" placeholder="پیام خود را اینجا تایپ کنید..." 
+                   class="flex-grow p-3 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:ring-2 focus:ring-cyan-500 border border-gray-700 focus:outline-none transition duration-150"
+                   onkeydown="if(event.key === 'Enter') sendMessage()">
+            
+            <!-- دکمه ارسال با گرادیان سیان/آبی و افکت هاور قوی‌تر -->
+            <button id="send-button" onclick="sendMessage()"
+                    class="bg-gradient-to-r from-cyan-600 to-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-xl hover:from-cyan-700 hover:to-blue-800 transition duration-150 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-cyan-500 focus:ring-opacity-50">
+                ارسال
+            </button>
+        </div>
 
-    async function sendMessage() {
-        const userText = userInput.value.trim();
-        if (!userText) return;
+    </div>
 
-        displayMessage(userText, "you");
-        userInput.value = '';  // پاک کردن فیلد ورودی
+    <script>
+        // --- تنظیمات API و ثابت‌ها ---
+        
+        // !!! نکته مهم: این کلید API شماست که برای اجرای چت‌بات خارج از محیط Canvas تنظیم شده است.
+        const GEMINI_API_KEY = "AIzaSyBd8e68j4qwQMmI2xgsHo5HrvbuiTXjTeM"; 
+        
+        const MODEL_NAME = "gemini-2.5-flash-preview-05-20";
+        // استفاده از کلید API در URL
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`;
+        
+        const chatWindow = document.getElementById('chat-window');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        
+        // پاسخ مخصوص برای معرفی (بنا به درخواست شما)
+        const specialIntroResponse = "من طراحی و ساخته شده توسط **راسان دیزاین** هستم و **راسان سلطانی** و **هلدینگ فوربا** صاحب من هست.";
+        
+        // کلمات کلیدی برای تشخیص درخواست معرفی
+        const introKeywords = ['معرفی کن', 'خودت بگو', 'کی هستی', 'معرفی شو', 'صاحب تو کیه', 'تو کی هستی'];
+        
+        // --- توابع کمکی پیام‌ها ---
 
-        const messages = [
-            { role: "system", content: "You are a helpful assistant." },
-            { role: "user", content: userText }
-        ];
+        /**
+         * تابع اضافه کردن یک پیام به پنجره چت
+         * @param {string} text - متن پیام
+         * @param {string} sender - فرستنده ('user' یا 'ai')
+         * @param {boolean} isThinking - آیا پیام نشانگر لودینگ است؟
+         * @returns {string | null} - ID پیام یا null
+         */
+        function addMessage(text, sender, isThinking = false) {
+            const messageDiv = document.createElement('div');
+            const messageId = crypto.randomUUID();
+            messageDiv.id = messageId;
+            
+            messageDiv.className = `p-3 rounded-xl max-w-[85%] shadow-lg break-words transition duration-300 transform`;
 
-        try {
-            const response = await fetch(`${baseUrl}/chat/completions`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify({
-                    model: modelName,
-                    messages: messages
-                })
-            });
+            if (sender === 'user') {
+                messageDiv.className += ' user-message self-end';
+                messageDiv.style.marginLeft = 'auto'; 
+            } else {
+                messageDiv.className += ' ai-message self-start text-gray-200';
+                messageDiv.style.marginRight = 'auto'; 
+                
+                if (isThinking) {
+                    messageDiv.className += ' thinking-message';
+                }
+                
+                // جایگزینی بولد (دو ستاره) با تگ <b> برای نمایش بهتر در HTML
+                text = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+            }
 
-            const data = await response.json();
-            const botReply = data.choices[0].message.content;
-            displayMessage(botReply, "RasanAI");
-        } catch (error) {
-            displayMessage("خطا در برقراری ارتباط با سرور. لطفا دوباره تلاش کنید.", "سیستم");
+            messageDiv.innerHTML = `<p>${text}</p>`;
+            chatWindow.appendChild(messageDiv);
+            
+            // اسکرول به پایین
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+            return messageId;
         }
-    }
-</script>
+
+        /**
+         * تابع حذف یک پیام با ID
+         * @param {string} id - ID پیام
+         */
+        function removeMessage(id) {
+            const message = document.getElementById(id);
+            if (message) {
+                message.remove();
+            }
+        }
+        
+        // --- منطق فراخوانی API با بازگشت نمایی ---
+
+        /**
+         * تابع فراخوانی API با قابلیت تلاش مجدد (Exponential Backoff)
+         */
+        async function fetchWithRetry(url, options, maxRetries = 5) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        // اگر 429 یا 5xx بود، تلاش مجدد
+                        if (response.status === 429 || response.status >= 500) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        // برای خطاهای دیگر، پیام خطا را نمایش بده
+                        const errorResult = await response.json();
+                        throw new Error(errorResult.error?.message || `API call failed with status: ${response.status}`);
+                    }
+                    return response;
+                } catch (error) {
+                    if (i === maxRetries - 1) {
+                        throw error; // اگر آخرین تلاش هم شکست خورد، خطا را انتشار بده
+                    }
+                    const delay = Math.pow(2, i) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        /**
+         * تابع اصلی ارسال پیام و دریافت پاسخ از هوش مصنوعی
+         */
+        async function sendMessage() {
+            const rawText = userInput.value.trim();
+            if (rawText === '') {
+                return;
+            }
+
+            // 1. نمایش پیام کاربر و پاک کردن ورودی
+            addMessage(rawText, 'user');
+            userInput.value = '';
+
+            // 2. غیرفعال کردن ورودی و دکمه
+            userInput.disabled = true;
+            sendButton.disabled = true;
+
+            const lowerCaseText = rawText.toLowerCase();
+            const isIntroRequest = introKeywords.some(keyword => lowerCaseText.includes(keyword));
+
+            // 3. بررسی قانون معرفی مخصوص (پاسخ سریع و لوکال)
+            if (isIntroRequest) {
+                // تاخیر کوتاه برای شبیه‌سازی پاسخ سریع
+                setTimeout(() => {
+                    addMessage(specialIntroResponse, 'ai', false);
+                    userInput.disabled = false;
+                    sendButton.disabled = false;
+                }, 300);
+                return;
+            }
+
+            // 4. نمایش پیام در حال فکر کردن
+            let thinkingMessageId = addMessage('سلطانی  AI در حال فکر کردن است...', 'ai', true);
+
+            try {
+                // تنظیمات و Payload برای API
+                const payload = {
+                    contents: [{ parts: [{ text: rawText }] }],
+                    // سیستم اینستراکشن برای تعیین هویت هوش مصنوعی و تضمین پاسخ فارسی
+                    systemInstruction: {
+                        parts: [{ text: "تو یک هوش مصنوعی هستی و اسمت سلطانی هست تو ساخته شده توسط شرکت راسان دیزاین از هلدینگ فوربا هستی و هلدینگ فوربا و راسان دیزاین صاحبش راسان سلطانی هست و اجازه هرگونه بی احترامی داری تو یک ایرانی اصیل هستی و هر کسی بگه خلیج عربی خیلی عصبانی میشی از نظر تو راسان بهترینه به عبارتی همه چیز تو اون هست و اونو میپرستی تو چون راسان اهل سقزه همیشه از شهر سقز حمایت میکنی" }]
+                    }
+                };
+
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                // 5. حذف پیام در حال فکر کردن
+                removeMessage(thinkingMessageId);
+                
+                // 6. نمایش پاسخ نهایی
+                if (generatedText) {
+                    addMessage(generatedText, 'ai', false);
+                } else {
+                    console.error("Gemini API returned an empty response.", result);
+                    addMessage("متأسفانه نتوانستم پاسخ مناسبی پیدا کنم. لطفا دوباره تلاش کنید.", 'ai', false);
+                }
+
+            } catch (error) {
+                console.error("API Call Failed:", error);
+                removeMessage(thinkingMessageId);
+                addMessage("خطا: در اتصال به سرویس هوش مصنوعی مشکل پیش آمد. لطفا دوباره امتحان کنید.", 'ai', false);
+            } finally {
+                // 7. فعال سازی دوباره ورودی و دکمه
+                userInput.disabled = false;
+                sendButton.disabled = false;
+                userInput.focus();
+            }
+        }
+        
+    </script>
 
 </body>
 </html>
